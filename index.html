@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>心智核磁共振图谱</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Google Fonts: 引入 Noto Sans TC (黑体) 和 Noto Serif TC (宋体) -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@400;600;700&display=swap"
+          rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+
+        h1, h2, h3, h4, .serif-text {
+            font-family: 'Noto Serif TC', serif;
+        }
+
+        .fade-transition {
+            transition: opacity 0.4s ease-in-out;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+<header class="bg-white shadow-sm border-b border-slate-300 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-3 tracking-wide">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                     class="text-indigo-800">
+                    <path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/>
+                    <path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/>
+                    <path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"/>
+                    <path d="M17.599 6.5a3 3 0 0 0 .399-1.375"/>
+                </svg>
+                心智核磁共振图谱
+            </h1>
+            <p class="text-sm text-slate-500 mt-2 font-light leading-relaxed">基於美國國家精神衛生研究所
+                RDoC（研究領域標準）與「精神動力學」的多維映射模型。
+                探索各種表象心理問題背後，六個底層系統因子的激活規律，以及對應的治療疏導策略。</p>
+        </div>
+    </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <div class="mb-8 overflow-x-auto pb-2 border-b border-slate-200">
+        <div class="flex space-x-3 min-w-max pb-3" id="state-selectors">
+            <!-- 按钮由JS动态生成 -->
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+
+        <div class="lg:col-span-1 bg-white rounded-md shadow-sm border border-slate-200 p-6 flex flex-col items-center">
+            <h2 class="text-lg font-bold text-slate-800 mb-4 w-full text-center border-b border-slate-200 pb-3"
+                id="current-title">请选择图谱</h2>
+            <div class="w-full aspect-square relative">
+                <canvas id="rdocRadarChart"></canvas>
+            </div>
+            <div class="mt-6 text-xs text-slate-600 bg-slate-50 p-4 rounded-md w-full border border-slate-100">
+                <p class="font-bold text-slate-800 mb-2">RDoC 测评维度 (异常激活水平)：</p>
+                <ul class="list-disc pl-4 space-y-1.5 opacity-90">
+                    <li>负向效价 (恐惧/焦虑/丧失)</li>
+                    <li>正向效价 (奖赏/动力/习惯)</li>
+                    <li>认知系统 (注意力/工作记忆)</li>
+                    <li>社会过程 (依恋/面孔识别/自我他者)</li>
+                    <li>唤起与调节 (觉醒/节律/睡眠)</li>
+                    <li>感知与运动系统 (感觉输入/动作执行)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-5 relative">
+
+            <div class="bg-white rounded-md shadow-sm border border-slate-200 p-6 flex flex-col">
+                <div class="flex items-center gap-2 mb-4 border-b border-slate-100 pb-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                         class="text-rose-800">
+                        <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-1 1-1-1a4.95 4.95 0 1 0-7 7l10 10Z"/>
+                    </svg>
+                    <h3 class="text-base font-bold text-slate-800 tracking-wide">临床表象</h3>
+                </div>
+                <div id="features-content"
+                     class="text-slate-700 text-sm leading-relaxed space-y-3 overflow-y-auto pr-2 fade-transition flex-grow">
+                </div>
+            </div>
+
+            <div class="bg-white rounded-md shadow-sm border border-slate-200 p-6 flex flex-col">
+                <div class="flex items-center gap-2 mb-4 border-b border-slate-100 pb-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                         class="text-blue-800">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/>
+                        <path d="M2 12h20"/>
+                    </svg>
+                    <h3 class="text-base font-bold text-slate-800 tracking-wide">RDoC 生物学机理</h3>
+                </div>
+                <div id="rdoc-content"
+                     class="text-slate-700 text-sm leading-relaxed space-y-3 overflow-y-auto pr-2 fade-transition flex-grow">
+                </div>
+            </div>
+
+            <div class="bg-white rounded-md shadow-sm border border-slate-200 p-6 flex flex-col">
+                <div class="flex items-center gap-2 mb-4 border-b border-slate-100 pb-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                         class="text-indigo-800">
+                        <path d="M2 12h10"/>
+                        <path d="M9 4v16"/>
+                        <path d="m3 9 3 3-3 3"/>
+                        <path d="M14 19a2 2 0 1 1 4 0 2 2 0 0 1-4 0"/>
+                        <path d="M18 5a2 2 0 1 1 4 0 2 2 0 0 1-4 0"/>
+                        <path d="m15 17 4-10"/>
+                    </svg>
+                    <h3 class="text-base font-bold text-slate-800 tracking-wide">成因分析：精神动力与认知</h3>
+                </div>
+                <div id="psycho-content"
+                     class="text-slate-700 text-sm leading-relaxed space-y-3 overflow-y-auto pr-2 fade-transition flex-grow">
+                </div>
+            </div>
+
+            <div class="bg-white rounded-md shadow-sm border border-slate-200 p-6 flex flex-col">
+                <div class="flex items-center gap-2 mb-4 border-b border-slate-100 pb-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                         class="text-emerald-800">
+                        <path d="M11 2a2 2 0 0 0-2 2v5H4a2 2 0 0 0-2 2v2c0 1.1.9 2 2 2h5v5c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2v-5h5a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2h-5V4a2 2 0 0 0-2-2h-2z"/>
+                    </svg>
+                    <h3 class="text-base font-bold text-slate-800 tracking-wide">疏导与治疗策略</h3>
+                </div>
+                <div id="treatment-content"
+                     class="text-slate-700 text-sm leading-relaxed space-y-3 overflow-y-auto pr-2 fade-transition flex-grow">
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="bg-slate-800 rounded-md shadow-md border border-slate-700 p-6 md:p-8 text-slate-100 w-full mb-12">
+        <div class="flex items-center gap-3 mb-6 border-b border-slate-600 pb-3">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                 class="text-amber-200">
+                <rect width="18" height="18" x="3" y="3" rx="2"/>
+                <path d="M7 3v18"/>
+                <path d="M3 7.5h4"/>
+                <path d="M3 12h18"/>
+                <path d="M3 16.5h4"/>
+                <path d="M17 3v18"/>
+                <path d="M17 7.5h4"/>
+                <path d="M17 16.5h4"/>
+            </svg>
+            <h3 class="text-lg font-bold text-slate-50 tracking-wide">文艺镜像与文本投射</h3>
+            <span class="ml-auto text-xs text-slate-400 border border-slate-600 bg-slate-700/50 px-2 py-1 rounded">影史经典剖析</span>
+        </div>
+        <div id="art-content"
+             class="text-slate-300 text-sm md:text-base leading-relaxed space-y-4 fade-transition font-light">
+            <div class="flex h-32 items-center justify-center text-slate-500">
+                请在上方选择图谱以载入文艺镜像...
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<script>
+    let radarChartInstance = null;
+
+    // 包含六个 RDoC 维度的雷达数据
+    // [负向效价, 正向效价, 认知系统, 社会过程, 唤起调节, 感知运动]
+    const mentalStates = {
+        'depression': {
+            title: '重度抑郁图谱',
+            en: 'Major Depressive',
+            radarData: [90, 20, 60, 30, 40, 70], // 感知运动(精神运动性迟滞)异常高
+            features: `
+                    <p>表现为深度的空虚感、快感缺失、持续疲劳、无价值感以及精神运动性迟滞。现实检验能力退化，陷入对自我价值的绝对否定。</p>
+                    <h4 class="font-bold text-slate-800 mt-5 mb-2 border-b border-slate-200 pb-1 serif-text text-[15px]">隐秘的剩余快感 (Surplus Jouissance)</h4>
+                    <p>抑郁不仅是痛苦，更是一种防御性“享乐”。患者通过维持一种“我是一无是处”的受害者姿态，逃避了面对现实挑战的焦虑。同时，强迫性的<b>反刍思维（Rumination）</b>也是一种隐秘的快感机制：主体在痛苦的反复自我审判（“为什么是我？”）中获得了一种病态的存在确认——只要我还在追问，我就还存在。这是他们在废墟中维持自我边界的方式。<br>
+                    <span class="text-xs text-slate-500 italic mt-1 block">* 需强调：这是一种潜意识层面的防御机制，而非患者主观意识上主动选择的“装病”或“求爽”。</span></p>
+                `,
+            rdoc: `
+                    <p><b>正向效价激活不足：</b> 纹状体多巴胺回路迟钝，无法对外部奖赏产生预期与反应。</p>
+                    <p><b>唤起与调节失能：</b> HPA轴（下丘脑-垂体-肾上腺轴）慢性过度激活导致神经毒性，海马体萎缩；感知运动系统表现为显著的迟滞或激越。</p>
+                `,
+            psycho: `
+                    <p>弗洛伊德在《哀悼与抑郁》中指出，抑郁是对失去的客体愤怒内化攻击自身。</p>
+                    <h4 class="font-bold text-slate-800 mt-5 mb-2 border-b border-slate-200 pb-1 serif-text text-[15px]">自恋性丧失与“无名之丧”</h4>
+                    <p>哀悼与抑郁的核心区别在于能否意识到失去了什么。抑郁者的丧失往往是“无名之丧”（如无意识中丧失了某个内化的自恋客体），主体甚至不知道自己失去了什么，因此连为何痛苦都无法言说。</p>
+                `,
+            treatment: `
+                    <p><b>EBR能量结转化：</b> 抑郁往往伴随胸口或胃部的沉重淤堵。需寻找未被允许表达哀伤的“源头印痕”，释放悲伤的躯体能量。</p>
+                    <h4 class="font-bold text-slate-800 mt-5 mb-2 border-b border-slate-200 pb-1 serif-text text-[15px]">移情与咨询师定位</h4>
+                    <p>患者极易将咨询师理想化为拯救者，咨询师必须中正抱持，不提供现成答案（不夺走对方成长的痛），陪伴其穿越匮乏区。</p>
+                `,
+            artMirror: `
+                    <p><strong class="text-amber-200 text-lg serif-text tracking-wide">《海边的曼彻斯特》 (Manchester by the Sea, 2016)</strong></p>
+                    <p>男主角李·钱德勒因一场过失导致三个孩子葬身火海，心灵彻底死机。他在波士顿做着底层的修理工，用机械的体力劳动来维系生存特征。</p>
+                    <p><strong>导师解析：</strong>李的抑郁是一种彻底的“能量结闭锁”。主流社会总是催促人们“向前看”，但李那句 <em>"I can't beat it" (我过不去)</em>，恰是对强制性治愈的抵抗。他的悲伤是他对死去的孩子最后的剩余快感与忠诚。作为导师，我们不能强行拉他上岸，而是要允许他在自己的岛屿上带着创伤安全地活着，这是对“无名之丧”的最高敬畏。</p>
+                `
+        },
+        'anxiety': {
+            title: '焦虑图谱',
+            en: 'Anxiety Spectrum',
+            radarData: [85, 50, 70, 60, 95, 75], // 唤起极高，感知运动(肌肉紧张)高
+            features: `
+                    <p>躯体高度紧张、心悸、灾难化思维（现实检验扭曲为“到处都是危险”）、对未知的不耐受。</p>
+                    <h4 class="font-bold text-slate-800 mt-5 mb-2 border-b border-slate-200 pb-1 serif-text text-[15px]">隐秘的剩余快感 (Surplus Jouissance)</h4>
+                    <p>焦虑者的大脑在制造麻烦。处于“战或逃”中的主体，其实在享受一种虚假的“全能控制感”。通过疯狂担忧还未发生的事，他们维持着一种“只要我足够紧张，坏事就不会发生”的隐秘全能自恋，是对丧失控制的病态反抗。<br>
+                    <span class="text-slate-600 mt-2 block">对于惊恐障碍（Panic Disorder）而言，其快感机制则更多体现在对躯体感觉的灾难化（“心跳加速=我要死了”）与逃避回路中：主体在每次“成功逃脱”惊恐发作后，获得一种虚假的“我又一次控制了它/活下来了”的解脱感，这本身成为了维持症状的隐秘回路。</span></p>
+                `,
+            rdoc: `
+                    <p><b>负向效价过度激活：</b> 杏仁核对潜在威胁信号异常敏感，前额叶皮层（理性认知）无法有效下行抑制。</p>
+                    <p><b>过度唤起与感知运动震荡：</b> 交感神经系统长期处于高压备战状态，自主神经紊乱，伴随持续的肌肉紧张。</p>
+                `,
+            psycho: `
+                    <p>焦虑源于生命力的压抑或自我（Ego）面对本我与超我冲突时的信号，深层常与早年客体关系中缺乏“安全基地”有关。</p>
+                    <h4 class="font-bold text-slate-800 mt-5 mb-2 border-b border-slate-200 pb-1 serif-text text-[15px]">世俗环境的严苛凝视</h4>
+                    <p>潜意识中渴望完美的退行，反映了对社会象征秩序（权威、评价体系）凝视的恐惧。焦虑者永远在猜测“别人想要我怎样（Che vuoi?）”，因害怕不能满足大他者的期待而陷入恐慌。</p>
+                `,
+            treatment: `
+                    <p><b>EBR能量结转化：</b> 焦虑的能量结常囤积在肩颈或呼吸道。通过躯体觉察，让患者“去感觉身体五感”，将飘在未来的思维拉回当下的躯体锚点。</p>
+                    <h4 class="font-bold text-slate-800 mt-5 mb-2 border-b border-slate-200 pb-1 serif-text text-[15px]">直面匮乏的苏格拉底提问</h4>
+                    <p>打破暗含假设：“这个假设会带出什么结果？真的会发生吗？”引导接受人生的不确定性，放弃即时控制感。</p>
+                `,
+            artMirror: `
+                    <p><strong class="text-amber-200 text-lg serif-text tracking-wide">《鸟人》 (Birdman, 2014)</strong></p>
+                    <p>过气的超级英雄扮演者里根，试图通过执导一部话剧重振声威。整部电影通过一镜到底的视听语言，完美外化了一个处于极致焦虑的主体。</p>
+                    <p><strong>导师解析：</strong>里根脑海中挥之不去的“鸟人”声音，正是精神分析中那个严苛而暴虐的“超我”。他渴望被社会象征秩序看见，他的焦虑源于“我不再重要”的匮乏感。影片结尾的纵身一跃，是主体试图拥抱无焦虑虚构全能自恋的毁灭性逃亡。</p>
+                `
+        },
+        'ocd': {
+            title: '强迫图谱',
+            en: 'Obsessive-Compulsive',
+            radarData: [80, 40, 85, 50, 70, 85], // 认知(僵化)高，感知运动(强迫动作)极高
+            features: `
+                    <p>侵入性思维（强迫观念）与反复的仪式化行为（强迫动作）。患者自知不合理但无法控制。</p>
+                    <h4 class="font-bold text-slate-800 mt-5 mb-2 border-b border-slate-200 pb-1 serif-text text-[15px]">仪式中的隐秘享乐</h4>
+                    <p>强迫症的核心是控制欲。仪式行为虽然痛苦，但主体在严格遵循仪式的瞬间，获得了一种“绝对秩序”的虚假安全感（剩余快感），借此抵御内在无序的恐惧。</p>
+                `,
+            rdoc: `
+                    <p><b>认知控制网络异常：</b> 额叶-纹状体-丘脑回路（CSTC）的信息过滤系统卡死。“错误检测机制”持续发出假警报，导致认知灵活性极差。感知运动系统被迫执行重复动作以降低警报。</p>
+                `,
+            psycho: `
+                    <p>除了早期精神分析关于“防御机制（隔离与抵消）”的解释，当代认知-动力学对其机制有了更精确的整合。</p>
+                    <h4 class="font-bold text-slate-800 mt-5 mb-2 border-b border-slate-200 pb-1 serif-text text-[15px]">不耐受不确定性与责任膨胀</h4>
+                    <p>正如 Salkovskis 等人指出的，强迫症的核心是对“不确定性的极度不耐受”（Intolerance of Uncertainty）与“责任膨胀”（Inflated Responsibility）。患者深信自己对防范莫须有的灾难负有绝对责任（受制于严酷的超我），强迫行为是对这种责任感的无尽赎罪。</p>
+                `,
+            treatment: `
+                    <p><b>行为学切入：</b> 暴露与反应阻止（ERP），即“做一件与情绪唱反调的事（打破仪式）”，承受不确定性带来的焦虑。</p>
+                    <h4 class="font-bold text-slate-800 mt-5 mb-2 border-b border-slate-200 pb-1 serif-text text-[15px]">探寻背后的愤怒能量</h4>
+                    <p>在EBR层面，强迫症僵硬的躯体下往往压抑着对权威的巨大愤怒。需引导其觉察并合理表达攻击性，放下“我不完美就会导致毁灭”的病态信念。</p>
+                `,
+            artMirror: `
+                    <p><strong class="text-amber-200 text-lg serif-text tracking-wide">《飞行家》 (The Aviator, 2004)</strong></p>
+                    <p>传奇大亨霍华德·休斯在晚年深陷严重的强迫症，将自己锁在放映室里，用纸巾包裹一切物品，极度恐惧细菌。</p>
+                    <p><strong>导师解析：</strong>影片开场，休斯的母亲给他洗澡时灌输了对细菌的极度恐惧（原生家庭病态凝视的植入）。休斯的强迫症，是他为了维持自体边界不被“肮脏的实在界”入侵而建立的钢铁防线。这种仪式化的隔离，是对“责任膨胀”和内化母职的永远屈服。当他的天才与强迫症状紧紧缠绕时，剥离症状仿佛也是在剥离他的生命力。</p>
+                `
+        },
+        'borderline': {
+            title: '边缘型图谱 (BPD)',
+            en: 'Borderline Personality',
+            radarData: [90, 70, 50, 95, 80, 60], // 社会过程极度动荡，负向极高
+            features: `
+                    <p>极度害怕被抛弃，人际关系在“过度理想化”与“极度贬低”之间剧烈摇摆。冲动行为（自残等），持续的空虚感。</p>
+                    <h4 class="font-bold text-slate-800 mt-5 mb-2 border-b border-slate-200 pb-1 serif-text text-[15px]">戏剧化的痛苦与存在确认</h4>
+                    <p>边缘型个体的“作”与自残，往往是为了在麻木空虚中感受躯体的痛觉，以此确立边界：“痛，所以我存在”。这也是一种迫使他者关注的操纵性剩余快感。</p>
+                `,
+            rdoc: `
+                    <p><b>社会过程系统崩溃：</b> 面孔情绪识别异常（常将中性表情误判为敌意）。杏仁核高度反应而前额叶控制低下，情绪调节犹如没有刹车的跑车。</p>
+                `,
+            psycho: `
+                    <p>客体关系理论认为其卡在“分离-个体化”阶段，使用“分裂（Splitting）”机制，无法将客体的好与坏整合。</p>
+                    <h4 class="font-bold text-slate-800 mt-5 mb-2 border-b border-slate-200 pb-1 serif-text text-[15px]">心智化 (Mentalization) 的断崖式跌落</h4>
+                    <p>在 Fonagy 的心智化理论（MBT）视角下，BPD的核心障碍在于：当情绪被高度唤起时，“心智化”能力会骤降。他们瞬间丧失了同时思考自己和他人内心状态的能力，退行到“心理等同模式”（我的主观感受等于客观事实），从而引发极端的暴怒与绝望。</p>
+                `,
+            treatment: `
+                    <p><b>咨询师的极速试炼：</b> 移情极其剧烈。咨询师必须如同山岳般中正，不被激怒，也不过度卷入，提供一个恒定的客体体验。</p>
+                    <h4 class="font-bold text-slate-800 mt-5 mb-2 border-b border-slate-200 pb-1 serif-text text-[15px]">DBT与MBT的心智容器重塑</h4>
+                    <p>结合辩证行为疗法（DBT）与心智化疗法（MBT），在EBR层面强化自体心理的“根部能量”，提升其涵容对立面（好与坏同在）的心智容量，重新激活心智化网络。</p>
+                `,
+            artMirror: `
+                    <p><strong class="text-amber-200 text-lg serif-text tracking-wide">《移魂女郎》 (Girl, Interrupted, 1999)</strong></p>
+                    <p>《移魂女郎》中的苏珊娜界限感模糊，情绪大起大落，与反社会人格Lisa产生了病态的依恋。</p>
+                    <p><strong>导师解析：</strong>苏珊娜的困境，是心智化能力丧失后的“分裂”机制。她不知如何将好与坏整合在同一个客体上。她的自杀倾向是对内部空虚感（缺乏稳定的自体表象）的躯体化反抗。在治疗中，这类来访者会用最激烈的方式测试你的底线。作为导师，要在狂风暴雨中稳住船帆，不加批判地见证她们的破碎与重组。</p>
+                `
+        },
+        'narcissistic': {
+            title: '自恋型图谱 (NPD)',
+            en: 'Narcissistic Personality',
+            radarData: [40, 90, 60, 85, 50, 30], // 正向极高，社会过程偏离(缺乏共情)
+            features: `
+                    <p>夸大自我重要性，沉浸于成功、权力或理想之爱的幻想中。极度需要他人的赞美，同时缺乏对他人的共情。</p>
+                    <h4 class="font-bold text-slate-800 mt-5 mb-2 border-b border-slate-200 pb-1 serif-text text-[15px]">隐秘的剩余快感：全能自恋的巨婴</h4>
+                    <p>在科胡特（Heinz Kohut）的自体心理学框架下，这种快感建立在未被现实化挫折驯化的婴儿期“全能自恋”上。他们将周围人剥削为实现自己理想化幻想的工具，通过贬低他人来维持虚假的绝对优越感，以此抵御深层的无价值感。</p>
+                `,
+            rdoc: `
+                    <p><b>社会过程异常（自我-他者表征失衡）：</b> 无法在神经生物学层面建立真正的“心智游移（Theory of Mind）”，感知他人痛苦的能力受损。正向效价的奖赏系统对社会赞誉过度激活。</p>
+                `,
+            psycho: `
+                    <p>这是因为早年抚养者未能提供足够的“镜映（Mirroring）”或过度满足，导致主体卡在夸大自体阶段。他们没有形成坚实的内核，只能靠吸食他人的赞美（将他人视作“自体客体/Selfobject”）来续命。</p>
+                    <h4 class="font-bold text-slate-800 mt-5 mb-2 border-b border-slate-200 pb-1 serif-text text-[15px]">自恋暴怒与大他者的镜像</h4>
+                    <p>他们终生都在大他者的镜子前摆拍。一旦外界拒绝提供赞美，或者戳破其平庸，自恋者就会体验到自我的灾难性解体，从而爆发出极具破坏性的“自恋暴怒（Narcissistic Rage）”。</p>
+                `,
+            treatment: `
+                    <p><b>治疗师的容器功能：</b> 最初只能充当一个不带评判的“镜子”，允许他们夸大。随后在长期的陪伴中，引入“恰到好处的挫折（Optimal Frustration）”，帮助其建立真实的自体。</p>
+                    <h4 class="font-bold text-slate-800 mt-5 mb-2 border-b border-slate-200 pb-1 serif-text text-[15px]">EBR与原始悲哀的转化</h4>
+                    <p>在EBR印痕清除中，需要触碰他们那份“从未被真实地看见过”的原始悲哀，将那份为了对抗匮乏而冻结的僵硬防御融化。</p>
+                `,
+            artMirror: `
+                    <p><strong class="text-amber-200 text-lg serif-text tracking-wide">《蓝色茉莉》 (Blue Jasmine, 2013) & 《消失的爱人》 (Gone Girl, 2014)</strong></p>
+                    <p>茉莉曾是纽约的上流名媛，破产后依然死死维持着虚荣和高高在上的幻觉。《消失的爱人》中的艾米则展现了自恋与反社会（恶性自恋）的极致，通过预谋性操纵完成对伴侣的绝对控制。</p>
+                    <p><strong>导师解析：</strong>茉莉展现了自恋型人格在面临“大他者凝视”崩塌时的毁灭性图景。当实在界无情摧毁了她的镜花水月，她只能通过解离来保全“自恋幻想”。而艾米则揭示了当全能自恋的“控制欲”受到威胁时，主体会爆发出何等冰冷而残忍的“自恋暴怒”与报复。</p>
+                `
+        },
+        'avoidant': {
+            title: '回避型图谱 (AvPD)',
+            en: 'Avoidant Personality',
+            radarData: [85, 30, 50, 90, 60, 40], // 社会过程极高退缩，负向极高
+            features: `
+                    <p>极其敏感、自我评价极低、极度渴望亲密却又因为害怕被拒绝而主动退却。</p>
+                    <h4 class="font-bold text-slate-800 mt-5 mb-2 border-b border-slate-200 pb-1 serif-text text-[15px]">羞愧感与主动丧失的快感</h4>
+                    <p>其核心议题是“羞愧感”。由于深信自己是“有缺陷的”，他们会在别人抛弃自己之前，先一步推开别人。这种“主动切断联系”带来了一种苦涩的安全感（剩余快感）——“只要我不曾拥有，就不会体会失去的痛苦”。</p>
+                `,
+            rdoc: `
+                    <p><b>社会过程与负向效价的双重锁死：</b> 杏仁核对社交拒绝的信号呈现病态的过度激活。社会依恋系统（催产素回路）被恐惧本能全面抑制。</p>
+                `,
+            psycho: `
+                    <p>基于 Bowlby 与 Ainsworth 的<b>依恋理论 (Attachment Theory)</b>，回避型人格几乎总是与<b>不安全型依恋（特别是恐惧-回避型依恋 Fearful-Avoidant Attachment）</b>高度重叠。他们渴望亲密，但因早年遭遇严厉贬低或情感忽视，将亲近等同于“会被伤害”。</p>
+                    <h4 class="font-bold text-slate-800 mt-5 mb-2 border-b border-slate-200 pb-1 serif-text text-[15px]">逃离大他者的审判</h4>
+                    <p>回避型个体感到大他者的凝视永远是审判性的。他们试图在人们的视野中“隐身”，以此逃避暴露自身匮乏时产生的羞耻感。这也指明了治疗方向：咨询师必须成为一个坚实的“安全基地 (Secure Base)”，用持续的接纳去融化他们对亲密的恐惧。</p>
+                `,
+            treatment: `
+                    <p><b>治疗策略：绝对的安全抱持：</b> 咨询师决不能采用激进的面质。必须以极大的耐心，提供一种“你在这里是安全的，即使你什么都不做，我也不会评判你”的客体体验。</p>
+                    <h4 class="font-bold text-slate-800 mt-5 mb-2 border-b border-slate-200 pb-1 serif-text text-[15px]">EBR：松动羞耻的盔甲</h4>
+                    <p>回避者的躯体通常是向内瑟缩的（胸腔闭锁）。在EBR操作中，温和地引导其觉察并接纳身体的紧张，探索“我不够好”信念最早的印痕源头。</p>
+                `,
+            artMirror: `
+                    <p><strong class="text-amber-200 text-lg serif-text tracking-wide">《心灵捕手》 (Good Will Hunting, 1997)</strong></p>
+                    <p>天才威尔在孤儿院遭遇过虐待。尽管他深爱着女友斯凯兰，但他却在两人关系即将走向深刻时，用最残忍的话语将她骂走。</p>
+                    <p><strong>导师解析：</strong>威尔推开女友的这一幕，是回避型防御的教科书演示。他的潜意识台词是：“如果你靠近，就会看穿我灵魂的肮脏（极度的羞愧感），然后抛弃我。为了不被抛弃，我必须先毁灭这段关系。”直到心理医生连续说了十遍 <em>"It's not your fault"</em>，击碎了他内心暴虐的超我评判，威尔的羞愧盔甲才彻底瓦解。</p>
+                `
+        },
+        'bipolar': {
+            title: '双相图谱 (Bipolar)',
+            en: 'Bipolar Spectrum',
+            radarData: [60, 95, 70, 60, 90, 90], // 唤起、正向、感知运动(激越)极高
+            features: `
+                    <p>在抑郁的深渊与躁狂的巅峰之间剧烈摇摆。躁狂发作时表现为夸大妄想、睡眠需求急剧减少、思维奔逸以及精神运动性激越。</p>
+                    <h4 class="font-bold text-slate-800 mt-5 mb-2 border-b border-slate-200 pb-1 serif-text text-[15px]">全能防御 (Omnipotent Defense) 的狂欢</h4>
+                    <p>正如梅兰妮·克莱因所言，躁狂是对抗“抑郁位（Depressive Position）”哀悼焦虑的“全能防御”。核心是对失去全能控制的病态否认，主体通过极致的亢奋和向外逃离，拼命去否认内在深处的匮乏。只要我跑得足够快，虚无就追不上我。</p>
+                `,
+            rdoc: `
+                    <p><b>唤起与奖赏系统的极度震荡：</b> 腹侧被盖区多巴胺回路在躁狂期出现病态亢进；而当多巴胺耗竭时，瞬间坠入抑郁极寒。前额叶刹车功能失灵，感知运动系统过度活跃。</p>
+                `,
+            psycho: `
+                    <p>主体无法整合“好客体”与“坏客体”，也无法承受失去客体的哀悼过程。躁狂是一种“见诸行动（Acting out）”，试图吞噬一切来填补不存在的圆满。</p>
+                    <h4 class="font-bold text-slate-800 mt-5 mb-2 border-b border-slate-200 pb-1 serif-text text-[15px]">僭越大他者</h4>
+                    <p>在躁狂顶峰，主体幻想自己就是无所不能的“大他者”，企图凌驾于所有社会象征秩序（法律、道德法则）之上，通过打破规则体验虚幻的神性。</p>
+                `,
+            treatment: `
+                    <p><b>临床红线：</b> 躁狂期以精神科心境稳定剂干预为主。心理咨询师必须成为一个“结实的容器”，不被其狂妄所诱惑或激怒。</p>
+                    <h4 class="font-bold text-slate-800 mt-5 mb-2 border-b border-slate-200 pb-1 serif-text text-[15px]">EBR：将漂浮的能量锚定</h4>
+                    <p>躁狂者的躯体能量往往全部冲向头顶，脚底虚浮。平稳后，通过EBR引导觉察下肢和大地相连的触觉（Rooting），陪伴他们安全地去哀悼丧失。</p>
+                `,
+            artMirror: `
+                    <p><strong class="text-amber-200 text-lg serif-text tracking-wide">《国土安全》 (Homeland) & 《乌云背后的幸福线》 (Silver Linings Playbook, 2012)</strong></p>
+                    <p>特工卡莉展现了躁狂期“只有我能拯救世界”的夸大妄想与思维奔逸。而《乌云背后的幸福线》中的 Pat 则在经历双相爆发摧毁生活后，努力通过舞蹈和建立新关系来重建日常。</p>
+                    <p><strong>导师解析：</strong>卡莉诠释了“全能防御”，用亢奋掩盖孤独和失控感，患者往往迷恋躁狂期的“天才般”剩余快感而抗拒服药。相比之下，《乌云背后的幸福线》提供了一个宝贵的康复叙事：它展示了当主体不再通过躁狂来逃避匮乏，而是学会与疾病共存，并在真实的人际关系（而非妄想）中建立“联结”时，治愈的曙光是如何降临的。</p>
+                `
+        },
+        'addiction': {
+            title: '成瘾图谱 (Addiction)',
+            en: 'Addiction Spectrum',
+            radarData: [75, 95, 85, 50, 60, 80], // 正向(过度追求奖赏)极高，认知习惯化极高
+            features: `
+                    <p>对特定物质或行为的强迫性渴求。即使明知带来毁灭性后果，仍无法停止，并在停止后产生严重的戒断痛苦。</p>
+                    <h4 class="font-bold text-slate-800 mt-5 mb-2 border-b border-slate-200 pb-1 serif-text text-[15px]">与“死物”的倒错依恋</h4>
+                    <p>成瘾是与“剩余快感”最赤裸的短兵相接。成瘾者发现活人客体充满不确定性；而化学物质或代码是绝对服从的。他们选择了一种可控的自我毁灭，来替代不可控的真实生活。</p>
+                `,
+            rdoc: `
+                    <p><b>目标导向沦为强迫习惯（正向效价病态激活）：</b> 多巴胺奖赏预测误差（RPE）被直接劫持。行为控制权从“前额叶（价值判断）”转移到了“背侧纹状体（无意识强迫）”，大脑被重新硬线连接为一个渴望机器。</p>
+                `,
+            psycho: `
+                    <p>在 Khantzian 的<b>“自我用药假说 (Self-Medication Hypothesis)”</b>中，成瘾并非单纯追求快感，而是为了麻醉特定的情感痛苦（如阿片类对应孤独和无价值感，可卡因对应空虚和低能量感）。同时，这也像荣格所说的“误入歧途的求道”（用物质替代精神渴求）。</p>
+                    <h4 class="font-bold text-slate-800 mt-5 mb-2 border-b border-slate-200 pb-1 serif-text text-[15px]">短路大他者 (Short-circuiting the Big Other)</h4>
+                    <p>正常人通过语言、建立关系获得社会象征法则的奖赏。成瘾者直接在化学层面上强行获取了这种“圆满感”，他们绕过了象征界的法则，直接窃取了实在界的享乐。</p>
+                `,
+            treatment: `
+                    <p><b>戒除的本质不是剥夺，而是重建链接：</b> 著名的老鼠乐园实验（Rat Park）提示我们，成瘾的相反面可能不是单纯的清醒，而是“建立有意义的联结”。</p>
+                    <h4 class="font-bold text-slate-800 mt-5 mb-2 border-b border-slate-200 pb-1 serif-text text-[15px]">EBR：填补躯体深处的“黑洞”</h4>
+                    <p>成瘾者常感到胸口或胃部有一个“漏风的黑洞”。需直击黑洞底部的创伤印痕，帮助他们重新建立承受日常微小挫折的心智容量。</p>
+                `,
+            artMirror: `
+                    <p><strong class="text-amber-200 text-lg serif-text tracking-wide">《梦之安魂曲》 (Requiem for a Dream, 2000) & 《离开拉斯维加斯》 (Leaving Las Vegas, 1995)</strong></p>
+                    <p>《梦之安魂曲》展现了不同人物用特定物质麻醉特定匮乏的光谱（如母亲用安非他命麻醉对“上电视被大他者看见”的病态渴望）。《离开拉斯维加斯》则讲述了失去一切的编剧，决定用酒精把自己活活喝死。</p>
+                    <p><strong>导师解析：</strong>这两部电影构成了成瘾的完整维度。《梦》是 Khantzian“自我用药假说”的极致影像化：成瘾者试图用化学物质来填补特定的情感空缺。而《离开拉斯维加斯》则是关于“死本能（Death Drive）”最绝望的呈现。男主不是在追求快乐，而是在追求一种**“受控的彻底消亡”**。对于他来说，活着去面对妻离子散太痛了，酒精是他主动邀请来解构自己躯体和意识的“死神”。我们必须看到成瘾光谱两端这份对绝望的防御。</p>
+                `
+        },
+        'schizophrenia': {
+            title: '思觉失调/重度幻妄',
+            en: 'Schizophrenia Spectrum',
+            radarData: [60, 40, 85, 30, 70, 95], // 认知错乱极高，感知运动(幻觉/木僵)极高
+            features: `
+                    <p>妄想、幻听、言语及行为瓦解（阳性症状），情感淡漠（阴性症状）。彻底丧失现实检验能力。</p>
+                    <h4 class="font-bold text-slate-800 mt-5 mb-2 border-b border-slate-200 pb-1 serif-text text-[15px]">妄想系统中的剩余快感</h4>
+                    <p>建立一套荒诞但自洽的妄想系统，本身就是一种剩余快感。这是患者为了缝合崩塌的世界而做的最后努力，妄想的绝对确定性为他们抵御了实在界不可名状的虚无与恐怖。</p>
+                `,
+            rdoc: `
+                    <p><b>认知与感知运动系统严重宕机：</b> 前额叶连通性异常。感知运动系统在此呈现两极化的极端异常（偏离度极高）：一方面是<b>阳性症状</b>（感知运动过度激活：如逼真的幻听、幻视与激越）；另一方面是<b>阴性症状</b>（感知运动激活不足：如木僵 Catatonia、运动抑制与意志减退）。中脑边缘系统多巴胺活动亢进驱动了前者，而中脑皮层多巴胺低下导致了后者。</p>
+                `,
+            psycho: `
+                    <p>拉康认为，根源在于象征界核心节点“父之名”的缺失（Foreclosure）。能指与所指断裂，潜意识直接在现实中涌现成了幻听。</p>
+                    <h4 class="font-bold text-slate-800 mt-5 mb-2 border-b border-slate-200 pb-1 serif-text text-[15px]">阿尔法功能 (Alpha Function) 的失败</h4>
+                    <p>现代精神分析（如比昂 Bion）进一步指出，这源于心智“阿尔法功能”的崩溃：患者无法将原始的感官冲击（贝塔元素）转化为可思考的情感与梦境（阿尔法元素），导致心灵直接被未经消化的纯粹感官碎片（幻听/幻视）撑破。</p>
+                `,
+            treatment: `
+                    <p><b>临床红线：</b> 急性期必须依仗精神科药物。心理咨询起辅助作用。</p>
+                    <h4 class="font-bold text-slate-800 mt-5 mb-2 border-b border-slate-200 pb-1 serif-text text-[15px]">温和抱持与重建象征秩序</h4>
+                    <p>不直接拆穿其妄想（因为妄想是其生存支柱），而是通过稳定的“船夫”陪伴，缓慢建立现实链接。在EBR操作中需极度谨慎，避免诱发更严重的解离。</p>
+                `,
+            artMirror: `
+                    <p><strong class="text-amber-200 text-lg serif-text tracking-wide">《禁闭岛》 (Shutter Island, 2010)</strong></p>
+                    <p>泰迪构筑了一个无比庞杂的联邦探员查案妄想，而真实的他是一个因目睹妻子杀害三个孩子而精神崩溃的杀妻犯。</p>
+                    <p><strong>导师解析：</strong>泰迪的妄想机制诠释了精神分析中的“防御性建构”。当实在界（丧子与杀妻之痛）过于惨烈，大脑制造了一个虚假的象征秩序（我是正义的探员）。这种妄想是他阻挡心灵毁灭的最后防线。最后的“清醒地死去还是像怪物一样活着”，是主体对自身症状的最悲壮告别。</p>
+                `
+        },
+        'ptsd': {
+            title: 'PTSD创伤后应激',
+            en: 'Trauma & PTSD',
+            radarData: [95, 30, 50, 40, 90, 95], // 负向、唤起、感知运动(躯体闪回)极高
+            features: `
+                    <p>强烈的躯体闪回（Flashbacks）、回避创伤相关线索、警觉性极度增高。意识完全被困在过去的某一时刻。</p>
+                    <h4 class="font-bold text-slate-800 mt-5 mb-2 border-b border-slate-200 pb-1 serif-text text-[15px]">强迫性重复 (Repetition Compulsion)</h4>
+                    <p>患者似乎在不断重演创伤。这并非受虐狂，而是主体试图通过主动重演，去“掌控”当初那个被动无助的创伤时刻，这是一种残酷的剩余快感。</p>
+                `,
+            rdoc: `
+                    <p><b>负向效价与感知运动锁死：</b> 杏仁核反应过度，海马体（负责将记忆时间线归档）受损。导致创伤记忆无法作为“过去”被存储，而是作为“正在发生的现在”，持续在感知运动层面以躯体闪回的形式爆发。</p>
+                `,
+            psycho: `
+                    <p>创伤突破了心灵的“防卫盾”。是实在界（真实世界的无常与暴虐）野蛮撕裂了我们虚构的安全感。</p>
+                    <h4 class="font-bold text-slate-800 mt-5 mb-2 border-b border-slate-200 pb-1 serif-text text-[15px]">世界观的崩塌</h4>
+                    <p>创伤摧毁了患者对“世界是公平的、有序的”的根本信念，将其抛入无意义的虚无中。</p>
+                `,
+            treatment: `
+                    <p><b>躯体创伤视角的介入：</b> 结合范德科尔克（Bessel van der Kolk）《身体从未忘记》与彼得·莱文（Peter Levine）的躯体体验疗法（SE），PTSD的治疗必须从躯体切入，因为创伤被锁死在神经系统中。</p>
+                    <h4 class="font-bold text-slate-800 mt-5 mb-2 border-b border-slate-200 pb-1 serif-text text-[15px]">EBR重新编码与赋权</h4>
+                    <p>运用EBR躯体觉察，陪伴患者在安全的环境下释放“冰冻的躯体能量结”。从“受害者”的客体位置，转化为“我幸存了下来”的主体叙事。</p>
+                `,
+            artMirror: `
+                    <p><strong class="text-amber-200 text-lg serif-text tracking-wide">《猎鹿人》 (The Deer Hunter, 1978)</strong></p>
+                    <p>尼克在经历越战战俘营的极度创伤后，留在地下赌场，日复一日地玩真实的俄罗斯轮盘赌，直至饮弹自尽。</p>
+                    <p><strong>导师解析：</strong>尼克为什么要回到游戏中？这是弗洛伊德“强迫性重复”最极致的再现。创伤的印痕（EBR）刻骨铭心，他反复扣动扳机，是企图驯服那种面临死亡时的绝对恐惧感（将“被动受虐”转化为“主动找死”）。这揭示了创伤未被转化时，那股死本能的可怕毁灭性。</p>
+                `
+        }
+    };
+
+    let currentState = 'depression';
+
+    function initSelectors() {
+        const container = document.getElementById('state-selectors');
+        for (const key in mentalStates) {
+            const btn = document.createElement('button');
+            btn.className = `px-5 py-2 rounded-md font-medium text-sm whitespace-nowrap transition-colors duration-200 border ${key === currentState ? 'bg-slate-800 text-white border-slate-800 shadow-sm' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-slate-900'}`;
+            btn.textContent = mentalStates[key].title.split(' ')[0];
+            btn.onclick = () => updateDashboard(key, btn);
+            container.appendChild(btn);
+        }
+    }
+
+    function initChart() {
+        const ctx = document.getElementById('rdocRadarChart').getContext('2d');
+        radarChartInstance = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['负向效价 (威胁/失落)', '正向效价 (奖赏/动机)', '认知系统 (控制/记忆)', '社会过程 (依恋/识人)', '唤起/调节 (精力/睡眠)', '感知运动 (感觉/执行)'],
+                datasets: [{
+                    label: '系统激活异常偏离度',
+                    data: mentalStates[currentState].radarData,
+                    backgroundColor: 'rgba(30, 58, 138, 0.15)',
+                    borderColor: 'rgba(30, 58, 138, 0.8)',
+                    pointBackgroundColor: 'rgba(30, 58, 138, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(30, 58, 138, 1)',
+                    borderWidth: 2,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                layout: {
+                    padding: { left: 40, right: 40, top: 10, bottom: 10 }
+                },
+                scales: {
+                    r: {
+                        angleLines: {color: 'rgba(0, 0, 0, 0.08)'},
+                        grid: {color: 'rgba(0, 0, 0, 0.08)'},
+                        pointLabels: {
+                            font: {size: 11, family: "'Noto Sans TC', sans-serif"},
+                            color: '#475569'
+                        },
+                        ticks: {display: false, min: 0, max: 100}
+                    }
+                },
+                plugins: {
+                    legend: {display: false},
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `激活偏离度: ${context.raw}`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function updateDashboard(stateKey, buttonElement) {
+        currentState = stateKey;
+        const data = mentalStates[stateKey];
+
+        const buttons = document.getElementById('state-selectors').children;
+        Array.from(buttons).forEach(btn => {
+            btn.className = 'px-5 py-2 rounded-md font-medium text-sm whitespace-nowrap transition-colors duration-200 border bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-slate-900';
+        });
+        buttonElement.className = 'px-5 py-2 rounded-md font-medium text-sm whitespace-nowrap transition-colors duration-200 border bg-slate-800 text-white border-slate-800 shadow-sm';
+
+        document.getElementById('current-title').textContent = `${data.title}`;
+
+        if (radarChartInstance) {
+            radarChartInstance.data.datasets[0].data = data.radarData;
+            radarChartInstance.update();
+        }
+
+        const containers = [
+            document.getElementById('features-content'),
+            document.getElementById('rdoc-content'),
+            document.getElementById('psycho-content'),
+            document.getElementById('treatment-content'),
+            document.getElementById('art-content')
+        ];
+
+        containers.forEach(c => c.style.opacity = '0');
+
+        setTimeout(() => {
+            containers[0].innerHTML = data.features;
+            containers[1].innerHTML = data.rdoc;
+            containers[2].innerHTML = data.psycho;
+            containers[3].innerHTML = data.treatment;
+            containers[4].innerHTML = data.artMirror;
+
+            containers.forEach(c => c.style.opacity = '1');
+        }, 300);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        initSelectors();
+        initChart();
+        updateDashboard(currentState, document.getElementById('state-selectors').firstChild);
+    });
+</script>
+</body>
+</html>
